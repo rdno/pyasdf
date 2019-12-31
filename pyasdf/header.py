@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 """
 :copyright:
-    Lion Krischer (krischer@geophysik.uni-muenchen.de), 2013-2015
+    Lion Krischer (lion.krischer@gmail.com), 2013-2019
 :license:
     BSD 3-Clause ("BSD New" or "BSD Simplified")
 """
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
 
 import re
 
@@ -29,32 +29,92 @@ COMPRESSIONS = {
     "szip-ec-8": ("szip", ("ec", 8)),
     "szip-ec-10": ("szip", ("ec", 10)),
     "szip-nn-8": ("szip", ("nn", 8)),
-    "szip-nn-10": ("szip", ("nn", 10))
+    "szip-nn-10": ("szip", ("nn", 10)),
 }
 
 
 # The inversion mapping also works.
 for key, value in list(COMPRESSIONS.items()):
-    COMPRESSIONS[value] = key
+    COMPRESSIONS[value] = value
 
 
 FORMAT_NAME = "ASDF"
-FORMAT_VERSION = "1.0.0"
+SUPPORTED_FORMAT_VERSIONS = ("1.0.0", "1.0.1", "1.0.2", "1.0.3")
+
+
+AUXILIARY_DATA_PATH_PART_PATTERN = {
+    "1.0.0": r"^[a-zA-Z0-9][a-zA-Z0-9_]*[a-zA-Z0-9]$",
+    "1.0.1": r"^[a-zA-Z0-9][a-zA-Z0-9_]*[a-zA-Z0-9]$",
+    "1.0.2": r"^[a-zA-Z0-9][a-zA-Z0-9_]*[a-zA-Z0-9]$",
+    # Allow funky (but still ASCII) chars.
+    "1.0.3": r"^[a-zA-Z0-9-_\.!#$%&*+,:;<=>\?@\^~]+$",
+}
 
 
 # Regular expression for allowed filenames within the provenance group.
-PROV_FILENAME_REGEX = re.compile(r"^[0-9a-z][0-9a-z_]*[0-9a-z]$")
+PROV_FILENAME_REGEX = {
+    "1.0.0": re.compile(r"^[0-9a-z][0-9a-z_]*[0-9a-z]$"),
+    "1.0.1": re.compile(r"^[0-9a-z][0-9a-z_]*[0-9a-z]$"),
+    "1.0.2": re.compile(r"^[0-9a-z][0-9a-z_]*[0-9a-z]$"),
+    # All printable ASCII chars.
+    "1.0.3": re.compile(r"^[ -~]+$"),
+}
 
 # Regular expression for allowed tag names.
 TAG_REGEX = re.compile(r"^[a-z_0-9]+$")
 
-# 4 and 8 bytes signed integers and floating points.
-VALID_SEISMOGRAM_DTYPES = (
-    np.dtype("<i4"), np.dtype(">i4"),
-    np.dtype("<i8"), np.dtype(">i8"),
-    np.dtype("<f4"), np.dtype(">f4"),
-    np.dtype("<f8"), np.dtype(">f8")
-)
+# Valid seismogram dtypes, per file format version.
+VALID_SEISMOGRAM_DTYPES = {
+    "1.0.0": (
+        np.dtype("<i4"),
+        np.dtype(">i4"),
+        np.dtype("<i8"),
+        np.dtype(">i8"),
+        np.dtype("<f4"),
+        np.dtype(">f4"),
+        np.dtype("<f8"),
+        np.dtype(">f8"),
+    ),
+    "1.0.1": (
+        np.dtype("<i2"),
+        np.dtype(">i2"),
+        np.dtype("<i4"),
+        np.dtype(">i4"),
+        np.dtype("<i8"),
+        np.dtype(">i8"),
+        np.dtype("<f4"),
+        np.dtype(">f4"),
+        np.dtype("<f8"),
+        np.dtype(">f8"),
+    ),
+    "1.0.2": (
+        np.dtype("<i2"),
+        np.dtype(">i2"),
+        np.dtype("<i4"),
+        np.dtype(">i4"),
+        np.dtype("<i8"),
+        np.dtype(">i8"),
+        np.dtype("<f4"),
+        np.dtype(">f4"),
+        np.dtype("<f8"),
+        np.dtype(">f8"),
+    ),
+    "1.0.3": (
+        np.dtype("<i2"),
+        np.dtype(">i2"),
+        np.dtype("<i4"),
+        np.dtype(">i4"),
+        np.dtype("<i8"),
+        np.dtype(">i8"),
+        np.dtype("<f4"),
+        np.dtype(">f4"),
+        np.dtype("<f8"),
+        np.dtype(">f8"),
+    ),
+}
+
+# A small internal safety check.
+assert set(VALID_SEISMOGRAM_DTYPES.keys()) == set(SUPPORTED_FORMAT_VERSIONS)
 
 # MPI message tags used for communication.
 MSG_TAGS = [
@@ -79,7 +139,7 @@ MSG_TAGS = [
     # Otherwise all workers will keep looping to be able to synchronize
     # metadata.
     "ALL_DONE",
-    ]
+]
 
 # Convert to two-way dict as MPI only knows integer tags.
 MSG_TAGS = {msg: i for i, msg in enumerate(MSG_TAGS)}
