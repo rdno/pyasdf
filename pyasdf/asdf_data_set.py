@@ -227,11 +227,11 @@ class ASDFDataSet(object):
                 other_data_set = other_group[tag]
                 try:
                     if tag == "StationXML":
-                        np.testing.assert_array_equal(data_set.value,
-                                                      other_data_set.value)
+                        np.testing.assert_array_equal(data_set[()],
+                                                      other_data_set[()])
                     else:
                         np.testing.assert_allclose(
-                            data_set.value, other_data_set.value)
+                            data_set[()], other_data_set[()])
                 except AssertionError:
                     return False
         return True
@@ -373,7 +373,7 @@ class ASDFDataSet(object):
         if "QuakeML" not in self.__file:
             return obspy.core.event.Catalog()
         data = self.__file["QuakeML"]
-        if not len(data.value):
+        if not len(data[()]):
             return obspy.core.event.Catalog()
 
         with io.BytesIO(_read_string_array(data)) as buf:
@@ -693,7 +693,7 @@ class ASDFDataSet(object):
         channel = channel[:channel.find("__")]
         data = self.__file["Waveforms"]["%s.%s" % (network, station)][
             waveform_name]
-        tr = obspy.Trace(data=data.value)
+        tr = obspy.Trace(data=data[()])
         # Starttime is a timestamp in nanoseconds.
         tr.stats.starttime = obspy.UTCDateTime(
             float(data.attrs["starttime"]) / 1.0E9)
