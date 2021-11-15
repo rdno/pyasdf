@@ -23,7 +23,7 @@ import weakref
 
 # Py2k/3k compat.
 try:
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 except ImportError:
     from urllib.parse import urlparse
 
@@ -203,7 +203,7 @@ class ProvenanceAccessor(object):
         """
         Return a list of available provenance documents.
         """
-        return sorted((self.__data_set()._provenance_group.keys()))
+        return sorted(self.__data_set()._provenance_group.keys())
 
     def get_provenance_document_for_id(self, provenance_id):
         """
@@ -328,7 +328,7 @@ class AuxiliaryDataContainer(object):
                     "\tProvenance ID: '%s'\n" % self.provenance_id,
                     parameters="\n\t\t".join([
                         "%s: %s" % (_i[0], _i[1]) for _i in
-                        sorted(self.parameters.items(), key=lambda x: x[0])])))
+                        sorted(list(self.parameters.items()), key=lambda x: x[0])])))
 
     def _repr_pretty_(self, p, cycle):  # pragma: no cover
         p.text(self.__str__())
@@ -1225,7 +1225,7 @@ def label2string(labels):
                 raise ValueError(
                     "The labels must not contain a comma as it is used "
                     "as the separator for the different values.")
-        labels = u",".join([_i.strip() for _i in labels])
+        labels = ",".join([_i.strip() for _i in labels])
     return labels
 
 

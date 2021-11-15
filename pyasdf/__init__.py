@@ -65,7 +65,7 @@ def print_sys_info():
         problematic_mp=wm["problematic_multiprocessing"],
         other_modules="\n\t".join(
             "%s: %s" % (key, value) for key, value in
-            sorted(wm["module_versions"].items(), key=lambda x: x[0])
+            sorted(list(wm["module_versions"].items()), key=lambda x: x[0])
             if key != "mpi4py" and key != "h5py")
 
     ))

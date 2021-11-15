@@ -1482,7 +1482,7 @@ def test_saving_trace_labels(tmpdir):
     # Try again but this time with unicode.
     data_set = ASDFDataSet(filename)
     waveform = obspy.read(os.path.join(data_path, "TA.*.mseed")).sort()
-    labels = [u"?⸘‽", u"^§#⁇❦"]
+    labels = ["?⸘‽", "^§#⁇❦"]
     data_set.add_waveforms(waveform, "raw_recording", labels=labels)
 
     # Close and reopen.
@@ -1536,7 +1536,7 @@ def test_labels_are_persistent_through_processing(tmpdir):
     waveform = obspy.read(os.path.join(data_path, "TA.*.mseed")).sort()
     data_set.add_waveforms(
         waveform, "raw_recording",
-        labels=[u"?⸘‽", u"^§#⁇❦"])
+        labels=["?⸘‽", "^§#⁇❦"])
 
     # Close an reopen.
     del data_set
@@ -1569,7 +1569,7 @@ def test_queries_for_labels(tmpdir):
 
     # Store a new waveform.
     labels_b = ["what", "is", "happening"]
-    labels_c = [u"?⸘‽", u"^§#⁇❦"]
+    labels_c = ["?⸘‽", "^§#⁇❦"]
     labels_d = ["single_label"]
 
     tr = obspy.read()[0]
@@ -1597,7 +1597,7 @@ def test_queries_for_labels(tmpdir):
 
     # Once of each.
     result = [_i._station_name for _i in ds.ifilter(
-        ds.q.labels == ["what", u"?⸘‽", "single_label"])]
+        ds.q.labels == ["what", "?⸘‽", "single_label"])]
     assert result == ["BB.BB", "CC.CC", "DD.DD"]
 
     # No labels.
@@ -1612,7 +1612,7 @@ def test_queries_for_labels(tmpdir):
 
     # Unicode wildcard.
     result = [_i._station_name
-              for _i in ds.ifilter(ds.q.labels == u"^§#⁇*")]
+              for _i in ds.ifilter(ds.q.labels == "^§#⁇*")]
     assert result == ["CC.CC"]
 
     # BB and DD.
@@ -1622,7 +1622,7 @@ def test_queries_for_labels(tmpdir):
 
     # CC
     result = [_i._station_name
-              for _i in ds.ifilter(ds.q.labels == u"^§#⁇*")]
+              for _i in ds.ifilter(ds.q.labels == "^§#⁇*")]
     assert result == ["CC.CC"]
 
 

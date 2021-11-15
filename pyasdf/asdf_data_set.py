@@ -215,15 +215,15 @@ class ASDFDataSet(object):
         """
         if type(self) != type(other):
             return False
-        if self._waveform_group.keys() != other._waveform_group.keys():
+        if list(self._waveform_group.keys()) != list(other._waveform_group.keys()):  # NOQA
             return False
-        if self._provenance_group.keys() != other._provenance_group.keys():
+        if list(self._provenance_group.keys()) != list(other._provenance_group.keys()):  # NOQA
             return False
         if self.events != other.events:
             return False
         for station, group in self._waveform_group.items():
             other_group = other._waveform_group[station]
-            for tag, data_set in group.items():
+            for tag, data_set in list(group.items()):
                 other_data_set = other_group[tag]
                 try:
                     if tag == "StationXML":
@@ -275,7 +275,7 @@ class ASDFDataSet(object):
         """
         try:
             self.__file.close()
-        except:
+        except Exception:
             pass
 
     def _zeropad_ascii_string(self, text):
@@ -379,14 +379,14 @@ class ASDFDataSet(object):
         with io.BytesIO(_read_string_array(data)) as buf:
             try:
                 cat = obspy.read_events(buf, format="quakeml")
-            except:
+            except Exception:
                 # ObsPy is not able to read empty QuakeML files but they are
                 # still valid QuakeML files.
                 buf.seek(0, 0)
                 result = None
                 try:
                     result = obspy.core.quakeml._validate(buf)
-                except:
+                except Exception:
                     pass
                 # If validation is successful, but the initial read failed,
                 # it must have been an empty QuakeML object.
@@ -610,7 +610,7 @@ class ASDFDataSet(object):
         group = self._auxiliary_data_group[data_type]
 
         ds = group.create_dataset(**info["dataset_creation_params"])
-        for key, value in info["dataset_attrs"].items():
+        for key, value in list(info["dataset_attrs"].items()):
             ds.attrs[key] = value
 
     def add_quakeml(self, event):
@@ -1465,7 +1465,7 @@ class ASDFDataSet(object):
         if results is None:
             return
 
-        for _sta, _sta_info in results.iteritems():
+        for _sta, _sta_info in results.items():
             if _sta_info is None:
                 results[_sta] = []
                 _sta_info = []
@@ -1479,7 +1479,7 @@ class ASDFDataSet(object):
                 necessary_keys = ["object", "type", "path", "parameters"]
                 if set(_chan_info.keys()) != (set(necessary_keys)):
                     raise ValueError("Keys(%s) should be equal to: %s" %
-                                     (_chan_info.keys(), necessary_keys))
+                                     (list(_chan_info.keys()), necessary_keys))
                 if _chan_info["type"] != "AuxiliaryData":
                     raise NotImplementedError(
                         "Only support AuxiliaryData")
@@ -1526,7 +1526,7 @@ class ASDFDataSet(object):
             return info
 
         meta_list = []
-        for _sta, _sta_info in results.iteritems():
+        for _sta, _sta_info in results.items():
             for _chan_info in _sta_info:
                 _meta = create_dataset_params(_chan_info)
                 meta_list.append(_meta)
@@ -1556,14 +1556,14 @@ class ASDFDataSet(object):
         for _sta_info in collect_info:
             ds = group.create_dataset(**_sta_info["dataset_creation_params"])
 
-            for key, value in _sta_info["dataset_attrs"].iteritems():
+            for key, value in _sta_info["dataset_attrs"].items():
                 ds.attrs[key] = value
 
     def _write_hdf5_dataset_data_mpi(self, group, results):
         """
         Write auxiliary data into hdf5, indepandantly
         """
-        for _sta, _sta_info in results.iteritems():
+        for _sta, _sta_info in results.items():
             for _chan_info in _sta_info:
                 path = _chan_info["path"]
                 adj_data = _chan_info["object"]
@@ -1628,7 +1628,7 @@ class ASDFDataSet(object):
             # each process read the data it needs.
             for station in stations:
                 # Get the station and all possible tags.
-                waveforms = self.__file["Waveforms"][station].keys()
+                waveforms = list(self.__file["Waveforms"][station].keys())
 
                 tags = set()
                 for waveform in waveforms:
@@ -1637,7 +1637,7 @@ class ASDFDataSet(object):
                     tags.add(waveform.split("__")[-1])
 
                 for tag in tags:
-                    if tag not in tag_map.keys():
+                    if tag not in list(tag_map.keys()):
                         continue
                     station_tags.append((station, tag))
             has_station_tags = bool(station_tags)
@@ -1713,7 +1713,7 @@ class ASDFDataSet(object):
         """
         from mpi4py import MPI
 
-        worker_nodes = range(1, self.mpi.comm.size)
+        worker_nodes = list(range(1, self.mpi.comm.size))
         workers_requesting_write = []
 
         jobs = JobQueueHelper(jobs=station_tags,
@@ -1838,7 +1838,7 @@ class ASDFDataSet(object):
             # Check if master requested a write.
             if self._get_msg(0, "MASTER_FORCES_WRITE"):
                 self._sync_metadata(output_dataset, tag_map=tag_map)
-                for key, value in self.stream_buffer.items():
+                for key, value in list(self.stream_buffer.items()):
                     if value is not None:
                         for trace in value:
                             output_dataset.\
@@ -1960,7 +1960,7 @@ class ASDFDataSet(object):
         """
         if hasattr(self, "stream_buffer"):
             sendobj = []
-            for key, stream in self.stream_buffer.items():
+            for key, stream in list(self.stream_buffer.items()):
                 if stream is None:
                     continue
                 for trace in stream:
@@ -1974,8 +1974,8 @@ class ASDFDataSet(object):
 
         data = self.mpi.comm.allgather(sendobj=sendobj)
         # Chain and remove None.
-        trace_info = filter(lambda x: x is not None,
-                            itertools.chain.from_iterable(data))
+        trace_info = [x for x in itertools.chain.from_iterable(data)
+                      if x is not None]
         # Write collective part.
         for info in trace_info:
             output_dataset._add_trace_write_collective_information(info)
