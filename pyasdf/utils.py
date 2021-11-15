@@ -106,7 +106,7 @@ def _read_string_array(data):
     Helper function taking a string data set and preparing it so it can be
     read to a BytesIO object.
     """
-    return data[()].tostring().strip(b"\x00 ").strip()
+    return data[()].tobytes().strip(b"\x00 ").strip()
 
 
 class SimpleBuffer(object):
@@ -165,7 +165,7 @@ class ProvenanceAccessor(object):
 
         hash = hashlib.sha1(self.__data_set()
                             ._provenance_group[item]
-                            [()].tostring()).hexdigest()
+                            [()].tobytes()).hexdigest()
         if hash not in self._cache:
             self._cache[hash] = self.__data_set().get_provenance_document(item)
         return copy.deepcopy(self._cache[hash])
@@ -680,7 +680,7 @@ class WaveformAccessor(object):
                                 # Defaults to an empty id. Each can
                                 # potentially be a list of values.
                                 if key in attrs:
-                                    values = attrs[key].tostring().decode()\
+                                    values = attrs[key].tobytes().decode()\
                                         .split(",")
                                 else:
                                     values = [None]
@@ -944,7 +944,7 @@ def is_mpi_env():
     return True
 
 
-class StreamBuffer(collections.MutableMapping):
+class StreamBuffer(collections.abc.MutableMapping):
     """
     Very simple key value store for obspy stream object with the additional
     ability to approximate the size of all stored stream objects.
@@ -1242,7 +1242,7 @@ def is_list(obj):
 
     :param obj: The object to test.
     """
-    return isinstance(obj, collections.Iterable) and \
+    return isinstance(obj, collections.abc.Iterable) and \
         not isinstance(obj, string_types)
 
 

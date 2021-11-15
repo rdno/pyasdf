@@ -714,11 +714,11 @@ class ASDFDataSet(object):
             if name in data.attrs:
                 setattr(details, name + "s",
                         [obspy.core.event.ResourceIdentifier(_i) for _i in
-                         data.attrs[name].tostring().decode().split(",")])
+                         data.attrs[name].tobytes().decode().split(",")])
 
         if "provenance_id" in data.attrs:
             details.provenance_id = \
-                data.attrs["provenance_id"].tostring().decode()
+                data.attrs["provenance_id"].tobytes().decode()
 
         if "labels" in data.attrs:
             details.labels = labelstring2list(data.attrs["labels"])
@@ -1332,7 +1332,7 @@ class ASDFDataSet(object):
                 asdf_data_set=station._WaveformAccessor__data_set(),
                 filtered_items=wfs)
 
-        raise StopIteration
+        return
 
     def process_two_files(self, other_ds, process_function,
                           output_filename=None, traceback_limit=3):

@@ -6,8 +6,6 @@
 :license:
     BSD 3-Clause ("BSD New" or "BSD Simplified")
 """
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
 
 import glob
 import inspect
@@ -1201,8 +1199,8 @@ def test_empty_asdf_file_has_no_quakeml_dataset(tmpdir):
     data_set = ASDFDataSet(asdf_filename)
     data_set.__del__()
 
-    f = h5py.File(asdf_filename)
-    assert "QuakeML" not in f
+    with h5py.File(asdf_filename) as f:
+        assert "QuakeML" not in f
 
     # It should still return an empty catalog object if the events are
     # requested.
